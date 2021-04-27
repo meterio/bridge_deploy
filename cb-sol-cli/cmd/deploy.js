@@ -18,6 +18,7 @@ const deployCmd = new Command("deploy")
     .option('--erc20', 'Deploy erc20 contract')
     .option('--erc20Symbol <symbol>', 'Name for the erc20 contract', "")
     .option('--erc20Name <name>', 'Symbol for the erc20 contract', "")
+    .option('--erc20Decimals <decimals>', 'Decimals for the erc20 contract', 18)
     .option('--erc721', 'Deploy erc721 contract')
     .option('--centAsset', 'Deploy centrifuge asset contract')
     .option('--wetc', 'Deploy wrapped ETC Erc20 contract')
@@ -25,6 +26,7 @@ const deployCmd = new Command("deploy")
     .option('--multiSig', 'Deploy multi-sig')
     .option('--multisigOwners <value>', 'List of initial multi-sig owners', splitCommaList, [])
     .option('--multisigThreshold <value>', 'Number of votes required for a multi-sig transaction to be executed', 1)
+    .option('--wrapTokenAddress <address>', 'Address for native wrap token', '0x0000000000000000000000000000000000000000')
     .action(async (args) => {
         await setupParentArgs(args, args.parent)
         let startBal = await args.provider.getBalance(args.wallet.address)
@@ -179,7 +181,7 @@ async function deployBridgeContract(args) {
 
 async function deployERC20(args) {
     const factory = new ethers.ContractFactory(constants.ContractABIs.Erc20Mintable.abi, constants.ContractABIs.Erc20Mintable.bytecode, args.wallet);
-    const contract = await factory.deploy(args.erc20Name, args.erc20Symbol, { gasPrice: args.gasPrice, gasLimit: args.gasLimit});
+    const contract = await factory.deploy(args.erc20Name, args.erc20Symbol, args.erc20Decimals, { gasPrice: args.gasPrice, gasLimit: args.gasLimit});
     await contract.deployed();
     args.erc20Contract = contract.address
     console.log("✓ ERC20 contract deployed")
@@ -189,7 +191,7 @@ async function deployERC20Handler(args) {
     const factory = new ethers.ContractFactory(constants.ContractABIs.Erc20Handler.abi, constants.ContractABIs.Erc20Handler.bytecode, args.wallet);
 
 
-    const contract = await factory.deploy(args.bridgeContract, [], [], [], { gasPrice: args.gasPrice, gasLimit: args.gasLimit});
+    const contract = await factory.deploy(args.bridgeContract, args.wrapTokenAddress, [], [], [], { gasPrice: args.gasPrice, gasLimit: args.gasLimit});
     await contract.deployed();
     args.erc20HandlerContract = contract.address
     console.log("✓ ERC20Handler contract deployed")
@@ -213,7 +215,7 @@ async function deployERC721Handler(args) {
 
 async function deployGenericHandler(args) {
     const factory = new ethers.ContractFactory(constants.ContractABIs.GenericHandler.abi, constants.ContractABIs.GenericHandler.bytecode, args.wallet)
-    const contract = await factory.deploy(args.bridgeContract, [], [], [], [], { gasPrice: args.gasPrice, gasLimit: args.gasLimit})
+    const contract = await factory.deploy(args.bridgeContract, [], [], [], [], [], { gasPrice: args.gasPrice, gasLimit: args.gasLimit})
     await contract.deployed();
     args.genericHandlerContract = contract.address
     console.log("✓ GenericHandler contract deployed")

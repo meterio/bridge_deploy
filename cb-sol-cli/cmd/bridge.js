@@ -46,6 +46,7 @@ const registerGenericResourceCmd = new Command("register-generic-resource")
     .option('--targetContract <address>', `Contract address to be registered`, constants.CENTRIFUGE_ASSET_STORE_ADDRESS)
     .option('--resourceId <address>', `ResourceID to be registered`, constants.GENERIC_RESOURCEID)
     .option('--deposit <string>', "Deposit function signature", EMPTY_SIG)
+    .option('--depositOffset <value>', "Deposit function offset", 0)
     .option('--execute <string>', "Execute proposal function signature", EMPTY_SIG)
     .option('--hash', "Treat signature inputs as function prototype strings, hash and take the first 4 bytes", false)
     .action(async function(args) {
@@ -59,7 +60,7 @@ const registerGenericResourceCmd = new Command("register-generic-resource")
         }
 
         log(args,`Registering generic resource ID ${args.resourceId} with contract ${args.targetContract} on handler ${args.handler}`)
-        const tx = await bridgeInstance.adminSetGenericResource(args.handler, args.resourceId, args.targetContract, args.deposit, args.execute, { gasPrice: args.gasPrice, gasLimit: args.gasLimit})
+        const tx = await bridgeInstance.adminSetGenericResource(args.handler, args.resourceId, args.targetContract, args.deposit, args.depositOffset, args.execute, { gasPrice: args.gasPrice, gasLimit: args.gasLimit})
         await waitForTx(args.provider, tx.hash)
     })
 
@@ -70,6 +71,7 @@ const safeRegisterGenericResourceCmd = new Command("safe-register-generic-resour
     .option('--targetContract <address>', `Contract address to be registered`, constants.CENTRIFUGE_ASSET_STORE_ADDRESS)
     .option('--resourceId <address>', `ResourceID to be registered`, constants.GENERIC_RESOURCEID)
     .option('--depositSig <string>', "Deposit function signature", EMPTY_SIG)
+    .option('--depositOffset <value>', "Deposit function offset", 0)
     .option('--executeSig <string>', "Execute proposal function signature", EMPTY_SIG)
     .option('--hash', "Treat signature inputs as function prototype strings, hash and take the first 4 bytes", false)
     .requiredOption('--multiSig <value>', 'Address of Multi-sig which will acts bridge admin')
@@ -86,7 +88,7 @@ const safeRegisterGenericResourceCmd = new Command("safe-register-generic-resour
 
         logSafe(args,`Registering generic resource ID ${args.resourceId} with contract ${args.targetContract} on handler ${args.handler}`)
 
-        await safeTransactionAppoveExecute(args, 'adminSetGenericResource', [args.handler, args.resourceId, args.targetContract, args.deposit, args.execute])
+        await safeTransactionAppoveExecute(args, 'adminSetGenericResource', [args.handler, args.resourceId, args.targetContract, args.deposit, args.depositOffset, args.execute])
     })
 
 const setBurnCmd = new Command("set-burn")
