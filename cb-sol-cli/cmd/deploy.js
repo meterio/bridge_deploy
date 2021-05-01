@@ -27,10 +27,14 @@ const deployCmd = new Command("deploy")
     .option('--multisigOwners <value>', 'List of initial multi-sig owners', splitCommaList, [])
     .option('--multisigThreshold <value>', 'Number of votes required for a multi-sig transaction to be executed', 1)
     .option('--wrapTokenAddress <address>', 'Address for native wrap token', '0x0000000000000000000000000000000000000000')
+    .option('--bridgeAddress <address>', 'Address of deployed bridge ', '0x0000000000000000000000000000000000000000')
     .action(async (args) => {
         await setupParentArgs(args, args.parent)
         let startBal = await args.provider.getBalance(args.wallet.address)
         console.log("Deploying contracts...")
+
+        // preset the bridgeContract if it has deployed
+        args.bridgeContract = args.bridgeAddress;
         if(args.all) {
             await deployBridgeContract(args);
             await deployERC20Handler(args);
@@ -190,7 +194,7 @@ async function deployERC20(args) {
 async function deployERC20Handler(args) {
     const factory = new ethers.ContractFactory(constants.ContractABIs.Erc20Handler.abi, constants.ContractABIs.Erc20Handler.bytecode, args.wallet);
 
-
+    console.log(args.bridgeContract);
     const contract = await factory.deploy(args.bridgeContract, args.wrapTokenAddress, [], [], [], { gasPrice: args.gasPrice, gasLimit: args.gasLimit});
     await contract.deployed();
     args.erc20HandlerContract = contract.address
