@@ -180,6 +180,17 @@ const queryResourceId = new Command("query-resource")
         log(args, `Resource ID ${args.resourceId} is mapped to contract ${address}`)
     })
 
+const queryFeesCmd = new Command("query-fees")
+    .description("Queries fees of bridge")
+    .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
+    .action(async function (args) { 
+        await setupParentArgs(args, args.parent.parent)
+        const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
+
+        const [fee, specialFee, specialFeeChainID] = await bridgeInstance.getFees();
+
+        console.log("fee: " + fee.toString() + " (wei), specialFee: " + specialFee.toString() + " (wei), specialFeeChainID: " + specialFeeChainID.toString());
+    })
 
 const bridgeCmd = new Command("bridge")
 
@@ -193,6 +204,7 @@ bridgeCmd.addCommand(cancelProposalCmd)
 bridgeCmd.addCommand(safeCancelProposalCmd)
 bridgeCmd.addCommand(queryProposalCmd)
 bridgeCmd.addCommand(queryResourceId)
+bridgeCmd.addCommand(queryFeesCmd)
 
 
 
