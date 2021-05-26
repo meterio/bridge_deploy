@@ -324,6 +324,35 @@ const safeWithdrawCmd = new Command("safe-withdraw")
         await safeTransactionAppoveExecute(args, 'adminWithdraw',[args.handler, args.tokenContract, args.recipient, args.amountOrId])
     })
 
+const updateBridgeAddressCmd = new Command("update-bridgeAddress")
+    .description("update the bridgeAddress in handler")
+    .requiredOption('--handler <address>', 'Handler contract address', constants.ERC20_HANDLER_ADDRESS)
+    .requiredOption('--newBridgeAddress <address>', 'new bridge address in handler', constants.relayerAddresses[0])
+    .action(async function (args) {
+        await setupParentArgs(args, args.parent.parent)
+        const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
+        log(args, `update handler(${args.handler}) with new bridge address ${args.newBridgeAddress}`)
+        let tx = await bridgeInstance.adminUpdateBridgeAddress(args.handler, args.newBridgeAddress)
+        await waitForTx(args.provider, tx.hash)
+    })
+
+const safeUpdateBridgeAddressCmd = new Command("safe-update-bridgeAddress")
+    .description("update the bridgeAddress in handler")
+    .option('--handler <address>', 'Handler contract address', constants.ERC20_HANDLER_ADDRESS)
+    .option('--newBridgeAddress <address>', 'new bridge address in handler', constants.relayerAddresses[0])
+    .requiredOption('--multiSig <value>', 'Address of Multi-sig which acts as bridge admin')
+    .option('--approve', 'Approve transaction hash')
+    .option('--execute', 'Execute transaction')
+    .option('--approvers <value>', 'Approvers addresses', splitCommaList)
+    .action(async function (args) {
+        await safeSetupParentArgs(args, args.parent.parent)
+
+        logSafe(args, `Withdrawing tokens (${args.amountOrId}) in contract ${args.tokenContract} to recipient ${args.recipient}`)
+
+        await safeTransactionAppoveExecute(args, 'adminUpdateBridgeAddress',[args.handler, args.newBridgeAddress])
+    })
+
+
 const transferFunds = new Command("transfer-funds")
     .description("Transfers eth in the contract to the specified addresses")
     .requiredOption('--bridge <address>', 'Bridge contract address')
@@ -381,5 +410,8 @@ adminCmd.addCommand(withdrawCmd)
 adminCmd.addCommand(safeWithdrawCmd)
 adminCmd.addCommand(transferFunds)
 adminCmd.addCommand(safeTransferFunds)
+adminCmd.addCommand(updateBridgeAddressCmd)
+adminCmd.addCommand(safeUpdateBridgeAddressCmd)
+
 
 module.exports = adminCmd
