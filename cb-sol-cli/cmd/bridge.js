@@ -192,6 +192,19 @@ const queryFeesCmd = new Command("query-fees")
         console.log("fee: " + fee.toString() + " (wei), specialFee: " + specialFee.toString() + " (wei), specialFeeChainID: " + specialFeeChainID.toString());
     })
 
+const queryFeeCmd = new Command("query-fee")
+    .description("Queries fee of bridge to destination chain")
+    .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
+    .option('--destinationChainID <value>', 'Deposit nonce of proposal', 1)
+    .action(async function (args) {
+        await setupParentArgs(args, args.parent.parent)
+        const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
+
+        const fee = await bridgeInstance.getFee(args.destinationChainID);
+
+        console.log("fee: " + fee.toString() + " (wei), for destination chainID: " + args.destinationChainID.toString());
+    })
+
 const bridgeCmd = new Command("bridge")
 
 bridgeCmd.addCommand(registerResourceCmd)
@@ -205,6 +218,7 @@ bridgeCmd.addCommand(safeCancelProposalCmd)
 bridgeCmd.addCommand(queryProposalCmd)
 bridgeCmd.addCommand(queryResourceId)
 bridgeCmd.addCommand(queryFeesCmd)
+bridgeCmd.addCommand(queryFeeCmd)
 
 
 
