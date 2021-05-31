@@ -326,6 +326,7 @@ const safeWithdrawCmd = new Command("safe-withdraw")
 
 const updateBridgeAddressCmd = new Command("update-bridgeAddress")
     .description("update the bridgeAddress in handler")
+    .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
     .requiredOption('--handler <address>', 'Handler contract address', constants.ERC20_HANDLER_ADDRESS)
     .requiredOption('--newBridgeAddress <address>', 'new bridge address in handler', constants.relayerAddresses[0])
     .action(async function (args) {
@@ -338,6 +339,7 @@ const updateBridgeAddressCmd = new Command("update-bridgeAddress")
 
 const safeUpdateBridgeAddressCmd = new Command("safe-update-bridgeAddress")
     .description("update the bridgeAddress in handler")
+    .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
     .option('--handler <address>', 'Handler contract address', constants.ERC20_HANDLER_ADDRESS)
     .option('--newBridgeAddress <address>', 'new bridge address in handler', constants.relayerAddresses[0])
     .requiredOption('--multiSig <value>', 'Address of Multi-sig which acts as bridge admin')
