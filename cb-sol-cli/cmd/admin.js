@@ -267,7 +267,7 @@ const changeSpecialFeeCmd = new Command("set-specialFee")
     .option('--specialFeeChainID <value>', 'New chainID', 0)
     .action(async function (args) {
         await setupParentArgs(args, args.parent.parent)
-        const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
+        const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet, {gasPrice: args.gasPrice, gasLimit: args.gasLimit});
         log(args, `Setting fee to ${args.specialFee} wei, specialFeeChainID ${args.specialFeeChainID}`)
         let tx = await bridgeInstance.adminChangeSpecialFee(args.specialFee, args.specialFeeChainID)
         await waitForTx(args.provider, tx.hash)
@@ -333,7 +333,7 @@ const updateBridgeAddressCmd = new Command("update-bridgeAddress")
         await setupParentArgs(args, args.parent.parent)
         const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
         log(args, `update handler(${args.handler}) with new bridge address ${args.newBridgeAddress}`)
-        let tx = await bridgeInstance.adminUpdateBridgeAddress(args.handler, args.newBridgeAddress)
+        let tx = await bridgeInstance.adminUpdateBridgeAddress(args.handler, args.newBridgeAddress, {gasPrice: args.gasPrice, gasLimit: args.gasLimit})
         await waitForTx(args.provider, tx.hash)
     })
 
