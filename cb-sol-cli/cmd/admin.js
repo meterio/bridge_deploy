@@ -151,6 +151,62 @@ const safeRemoveRelayerCmd = new Command("safe-remove-relayer")
         await safeTransactionAppoveExecute(args, 'adminRemoveRelayer', [args.relayer])
     })
 
+const addOperatorCmd = new Command("add-operator")
+    .description("Add a operator")
+    .option('--operator <address>', 'Address of operator', constants.operatorAddresses[0])
+    .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
+    .action(async function (args) {
+        await setupParentArgs(args, args.parent.parent)
+        const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
+        log(args, `Adding ${args.relayer} as a relayer.`)
+        let tx = await bridgeInstance.adminAddOperator(args.operator)
+        await waitForTx(args.provider, tx.hash)
+    })
+
+const safeAddOperatorCmd = new Command("safe-add-operator")
+    .description("Add a operator")
+    .option('--operator <address>', 'Address of operator', constants.operatorAddresses[0])
+    .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
+    .requiredOption('--multiSig <value>', 'Address of Multi-sig which acts as bridge admin')
+    .option('--approve', 'Approve transaction hash')
+    .option('--execute', 'Execute transaction')
+    .option('--approvers <value>', 'Approvers addresses', splitCommaList)
+    .action(async function (args) {
+        await safeSetupParentArgs(args, args.parent.parent)
+
+        logSafe(args, `Adding ${args.operator} as a operator.`)
+
+        await safeTransactionAppoveExecute(args, 'adminAddOperator', [args.operator])
+    })
+
+const removeOperatorCmd = new Command("remove-operator")
+    .description("Remove a operator")
+    .option('--operator <address>', 'Address of operator', constants.operatorAddresses[0])
+    .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
+    .action(async function (args) {
+        await setupParentArgs(args, args.parent.parent)
+        const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
+        log(args, `Removing operator ${args.operator}.`)
+        let tx = await bridgeInstance.adminRemoveOperator(args.operator)
+        await waitForTx(args.provider, tx.hash)
+    })
+
+const safeRemoveOperatorCmd = new Command("safe-remove-operator")
+    .description("Remove a operator")
+    .option('--operator <address>', 'Address of operator', constants.operatorAddresses[0])
+    .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
+    .requiredOption('--multiSig <value>', 'Address of Multi-sig which acts as bridge admin')
+    .option('--approve', 'Approve transaction hash')
+    .option('--execute', 'Execute transaction')
+    .option('--approvers <value>', 'Approvers addresses', splitCommaList)
+    .action(async function (args) {
+        await safeSetupParentArgs(args, args.parent.parent)
+
+        logSafe(args, `Removing operator ${args.operator}.`)
+
+        await safeTransactionAppoveExecute(args, 'adminRemoveOperator', [args.operator])
+    })
+
 const pauseTransfersCmd = new Command("pause")
     .description("Pause deposits and proposal on the bridge")
     .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
@@ -398,6 +454,10 @@ adminCmd.addCommand(addRelayerCmd)
 adminCmd.addCommand(safeAddRelayerCmd)
 adminCmd.addCommand(removeRelayerCmd)
 adminCmd.addCommand(safeRemoveRelayerCmd)
+adminCmd.addCommand(addOperatorCmd)
+adminCmd.addCommand(safeAddOperatorCmd)
+adminCmd.addCommand(removeOperatorCmd)
+adminCmd.addCommand(safeRemoveOperatorCmd)
 adminCmd.addCommand(setThresholdCmd)
 adminCmd.addCommand(safeSetThresholdCmd)
 adminCmd.addCommand(pauseTransfersCmd)
