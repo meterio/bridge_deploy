@@ -178,7 +178,7 @@ async function deployBridgeContract(args) {
         args.expiry,
         { gasPrice: args.gasPrice, gasLimit: args.gasLimit}
     );
-
+    await contract.deployed()
     args.bridgeContract = contract.address
     console.log("✓ Bridge contract deployed")
 }
