@@ -2,7 +2,7 @@ const ethers = require('ethers');
 const constants = require('../constants');
 
 const {Command} = require('commander');
-const {setupParentArgs, splitCommaList, waitForTx, log, expandDecimals, logSafe} = require("./utils")
+const {setupParentArgs, safeSetupParentArgs, safeTransactionAppoveExecute, splitCommaList, waitForTx, log, expandDecimals, logSafe} = require("./utils")
 
 const isAdminCmd = new Command("is-admin")
   .description("Check if address is admin")
@@ -109,7 +109,7 @@ const safeMintCmd = new Command("safe-mint")
     .action(async function (args) {
         await safeSetupParentArgs(args, args.parent.parent)
 
-        logSafe(args, `Minting ${args.amount} tokens to ${args.wallet.address} on contract ${args.erc20Address}`);
+        logSafe(args, `Minting ${args.amount} tokens to ${args.wallet.address} on contract ${args.erc20Address}`)
 
         await safeTransactionAppoveExecute(args, 'mint', [args.wallet.address, expandDecimals(args.amount, args.decimals)])
     })
