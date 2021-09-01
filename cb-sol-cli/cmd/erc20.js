@@ -140,7 +140,32 @@ const safeAddMinterCmd = new Command("safe-add-minter")
         logSafe(args, `Adding ${args.minter} as a minter on contract ${args.erc20Address}`);
         await safeERC20TransactionAppoveExecute(args, 'grantRole',  [MINTER_ROLE, args.minter]) 
     })
+const removeMinterCmd = new Command("remove-minter")
+    .description("Remove a new minter to the contract")
+    .option('--erc20Address <address>', 'ERC20 contract address', constants.ERC20_ADDRESS)
+    .option('--minter <address>', 'Minter address', constants.relayerAddresses[1])
+    .action(async function(args) {
+        await setupParentArgs(args, args.parent.parent)
+        const erc20Instance = new ethers.Contract(args.erc20Address, constants.ContractABIs.Erc20Mintable.abi, args.wallet);
+        let MINTER_ROLE = await erc20Instance.MINTER_ROLE();
+        log(args, `Removeing ${args.minter} as a minter on contract ${args.erc20Address}`);
+        const tx = await erc20Instance.revokeRole(MINTER_ROLE, args.minter);
+        await waitForTx(args.provider, tx.hash)
+    })
 
+const safeRemoveMinterCmd = new Command("safe-remove-minter")
+    .description("Remove a new minter to the contract")
+    .option('--erc20Address <address>', 'ERC20 contract address', constants.ERC20_ADDRESS)
+    .option('--minter <address>', 'Minter address', constants.relayerAddresses[1])
+    .requiredOption('--multiSig <value>', 'Address of Multi-sig which acts as ERC20 admin')
+    .option('--approve', 'Approve transaction hash')
+    .option('--execute', 'Execute transaction')
+    .option('--approvers <value>', 'Approvers addresses', splitCommaList)
+    .action(async function(args) {
+        await safeSetupParentArgs(args, args.parent.parent)
+        logSafe(args, `Removing ${args.minter} as a minter on contract ${args.erc20Address}`);
+        await safeERC20TransactionAppoveExecute(args, 'revokeRole',  [MINTER_ROLE, args.minter]) 
+    })
 const approveCmd = new Command("approve")
     .description("Approve tokens for transfer")
     .option('--amount <value>', "Amount to transfer", 1)
@@ -268,7 +293,8 @@ erc20Cmd.addCommand(safeRemoveAdminCmd)
 erc20Cmd.addCommand(mintCmd)
 erc20Cmd.addCommand(safeMintCmd)
 erc20Cmd.addCommand(addMinterCmd)
-erc20Cmd.addCommand(safeAddMinterCmd)
+erc20Cmd.addCommand(removeMinterCmd)
+erc20Cmd.addCommand(safeRemoveMinterCmd)
 erc20Cmd.addCommand(approveCmd)
 erc20Cmd.addCommand(depositCmd)
 erc20Cmd.addCommand(balanceCmd)
