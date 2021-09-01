@@ -15,6 +15,24 @@ const isAdminCmd = new Command("is-admin")
     console.log(`[${args._name}] Address ${args.admin} ${res ? "is" : "is not"} a admin.`)
   })
 
+const adminInfoCmd = new Command("admin-info")
+  .description("Check admin role info")
+  .requiredOption('--erc20Address <address>', 'ERC20 contract address', constants.ERC20_ADDRESS)
+  .action(async function (args) {
+    await setupParentArgs(args, args.parent.parent)
+    const erc20Instance = new ethers.Contract(args.erc20Address, constants.ContractABIs.Erc20Mintable.abi, args.wallet);
+    let count = await erc20Instance.getRoleMemberCount(constants.ADMIN_ROLE)
+    console.log()
+    console.log(`[erc20 ${args.erc20Address}] has ${count} admin(s).`)
+    if (count > 0) {
+      var addr;
+      for (let i=0; i<count; i++) {
+        addr = await erc20Instance.getRoleMember(constants.ADMIN_ROLE, i)
+        console.log(` # ${i}: ${addr}`)
+      }
+    }
+  })
+
 /*** 
 const renounceAdminCmd = new Command("renounce-admin")
   .description("Admin renounce and set a new admin")
@@ -114,6 +132,25 @@ const safeMintCmd = new Command("safe-mint")
         await safeERC20TransactionAppoveExecute(args, 'mint', [args.wallet.address, expandDecimals(args.amount, args.decimals)])
     })
 
+const minterInfoCmd = new Command("minter-info")
+    .description("Check minter role info")
+    .requiredOption('--erc20Address <address>', 'ERC20 contract address', constants.ERC20_ADDRESS)
+    .action(async function (args) {
+      await setupParentArgs(args, args.parent.parent)
+      const erc20Instance = new ethers.Contract(args.erc20Address, constants.ContractABIs.Erc20Mintable.abi, args.wallet);
+      let MINTER_ROLE = await erc20Instance.MINTER_ROLE();
+      let count = await erc20Instance.getRoleMemberCount(MINTER_ROLE)
+      console.log()
+      console.log(`[erc20 ${args.erc20Address}] has ${count} minter(s).`)
+      if (count > 0) {
+        var addr;
+        for (let i=0; i<count; i++) {
+          addr = await erc20Instance.getRoleMember(MINTER_ROLE, i)
+          console.log(` # ${i}: ${addr}`)
+        }
+      }
+    })
+    
 const addMinterCmd = new Command("add-minter")
     .description("Add a new minter to the contract")
     .option('--erc20Address <address>', 'ERC20 contract address', constants.ERC20_ADDRESS)
@@ -140,6 +177,7 @@ const safeAddMinterCmd = new Command("safe-add-minter")
         logSafe(args, `Adding ${args.minter} as a minter on contract ${args.erc20Address}`);
         await safeERC20TransactionAppoveExecute(args, 'grantRole',  [MINTER_ROLE, args.minter]) 
     })
+    
 const removeMinterCmd = new Command("remove-minter")
     .description("Remove a new minter to the contract")
     .option('--erc20Address <address>', 'ERC20 contract address', constants.ERC20_ADDRESS)
@@ -285,6 +323,7 @@ const erc20Cmd = new Command("erc20")
 .option('-d, decimals <number>', "The number of decimal places for the erc20 token", 18)
 
 erc20Cmd.addCommand(isAdminCmd)
+erc20Cmd.addCommand(adminInfoCmd)
 //erc20Cmd.addCommand(renounceAdminCmd)
 erc20Cmd.addCommand(addAdminCmd)
 erc20Cmd.addCommand(safeAddAdminCmd)
@@ -292,7 +331,9 @@ erc20Cmd.addCommand(removeAdminCmd)
 erc20Cmd.addCommand(safeRemoveAdminCmd)
 erc20Cmd.addCommand(mintCmd)
 erc20Cmd.addCommand(safeMintCmd)
+erc20Cmd.addCommand(minterInfoCmd)
 erc20Cmd.addCommand(addMinterCmd)
+erc20Cmd.addCommand(safeAddMinterCmd)
 erc20Cmd.addCommand(removeMinterCmd)
 erc20Cmd.addCommand(safeRemoveMinterCmd)
 erc20Cmd.addCommand(approveCmd)
