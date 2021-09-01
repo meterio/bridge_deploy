@@ -2,7 +2,7 @@ const ethers = require('ethers');
 const constants = require('../constants');
 
 const {Command} = require('commander');
-const {setupParentArgs, safeSetupParentArgs, safeTransactionAppoveExecute, splitCommaList, waitForTx, log, expandDecimals, logSafe} = require("./utils")
+const {setupParentArgs, safeSetupParentArgs, safeTransactionAppoveExecute, safeERC20TransactionAppoveExecute, splitCommaList, waitForTx, log, expandDecimals, logSafe} = require("./utils")
 
 const isAdminCmd = new Command("is-admin")
   .description("Check if address is admin")
@@ -54,7 +54,7 @@ const safeAddAdminCmd = new Command("safe-add-admin")
 
     logSafe(args, `Adding ${args.admin} as a admin.`)
 
-    await safeTransactionAppoveExecute(args, 'grantRole', [constants.ADMIN_ROLE, args.admin])
+    await safeERC20TransactionAppoveExecute(args, 'grantRole', [constants.ADMIN_ROLE, args.admin])
   })
 
 const removeAdminCmd = new Command("remove-admin")
@@ -82,7 +82,7 @@ const safeRemoveAdminCmd = new Command("safe-remove-admin")
 
     logSafe(args, `Removing ${args.admin} as a admin.`)
 
-    await safeTransactionAppoveExecute(args, 'revokeRole', [constants.ADMIN_ROLE, args.admin])
+    await safeERC20TransactionAppoveExecute(args, 'revokeRole', [constants.ADMIN_ROLE, args.admin])
   })
 
 const mintCmd = new Command("mint")
@@ -111,7 +111,7 @@ const safeMintCmd = new Command("safe-mint")
 
         logSafe(args, `Minting ${args.amount} tokens to ${args.wallet.address} on contract ${args.erc20Address}`)
 
-        await safeTransactionAppoveExecute(args, 'mint', [args.wallet.address, expandDecimals(args.amount, args.decimals)])
+        await safeERC20TransactionAppoveExecute(args, 'mint', [args.wallet.address, expandDecimals(args.amount, args.decimals)])
     })
 
 const addMinterCmd = new Command("add-minter")
@@ -138,7 +138,7 @@ const safeAddMinterCmd = new Command("safe-add-minter")
     .action(async function(args) {
         await safeSetupParentArgs(args, args.parent.parent)
         logSafe(args, `Adding ${args.minter} as a minter on contract ${args.erc20Address}`);
-        await safeTransactionAppoveExecute(args, 'grantRole',  [MINTER_ROLE, args.minter]) 
+        await safeERC20TransactionAppoveExecute(args, 'grantRole',  [MINTER_ROLE, args.minter]) 
     })
 
 const approveCmd = new Command("approve")
