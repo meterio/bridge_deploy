@@ -174,10 +174,12 @@ const safeAddMinterCmd = new Command("safe-add-minter")
     .option('--approvers <value>', 'Approvers addresses', splitCommaList)
     .action(async function(args) {
         await safeSetupParentArgs(args, args.parent.parent)
+        const erc20Instance = new ethers.Contract(args.erc20Address, constants.ContractABIs.Erc20Mintable.abi, args.wallet);
+        let MINTER_ROLE = await erc20Instance.MINTER_ROLE()
         logSafe(args, `Adding ${args.minter} as a minter on contract ${args.erc20Address}`);
         await safeERC20TransactionAppoveExecute(args, 'grantRole',  [MINTER_ROLE, args.minter]) 
     })
-    
+
 const removeMinterCmd = new Command("remove-minter")
     .description("Remove a new minter to the contract")
     .option('--erc20Address <address>', 'ERC20 contract address', constants.ERC20_ADDRESS)
@@ -201,9 +203,12 @@ const safeRemoveMinterCmd = new Command("safe-remove-minter")
     .option('--approvers <value>', 'Approvers addresses', splitCommaList)
     .action(async function(args) {
         await safeSetupParentArgs(args, args.parent.parent)
+        const erc20Instance = new ethers.Contract(args.erc20Address, constants.ContractABIs.Erc20Mintable.abi, args.wallet);
+        let MINTER_ROLE = await erc20Instance.MINTER_ROLE();
         logSafe(args, `Removing ${args.minter} as a minter on contract ${args.erc20Address}`);
         await safeERC20TransactionAppoveExecute(args, 'revokeRole',  [MINTER_ROLE, args.minter]) 
     })
+
 const approveCmd = new Command("approve")
     .description("Approve tokens for transfer")
     .option('--amount <value>', "Amount to transfer", 1)
