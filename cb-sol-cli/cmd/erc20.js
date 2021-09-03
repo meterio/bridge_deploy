@@ -105,21 +105,25 @@ const safeRemoveAdminCmd = new Command("safe-remove-admin")
 
 const mintCmd = new Command("mint")
     .description("Mints erc20 tokens")
-    .option('--amount <value>', 'Amount to mint', 100)
+    .option('--amount <value>', 'Amount (wei) to mint', 100)
     .option('--erc20Address <address>', 'ERC20 contract address', constants.ERC20_ADDRESS)
+    .option('--receiver <address>', 'Receiver address', constants.adminAddresses)
     .action(async function (args) {
         await setupParentArgs(args, args.parent.parent)
 
         const erc20Instance = new ethers.Contract(args.erc20Address, constants.ContractABIs.Erc20Mintable.abi, args.wallet);
-        log(args, `Minting ${args.amount} tokens to ${args.wallet.address} on contract ${args.erc20Address}`);
-        const tx = await erc20Instance.mint(args.wallet.address, expandDecimals(args.amount, args.decimals));
+
+        // use wei as unit for less confusion
+        log(args, `Minting ${args.amount} (wei) tokens to ${args.receiver} on contract ${args.erc20Address}`);
+        const tx = await erc20Instance.mint(args.receiver, args.amount /*expandDecimals(args.amount, args.decimals)*/);
         await waitForTx(args.provider, tx.hash)
     })
 
 const safeMintCmd = new Command("safe-mint")
     .description("Mints erc20 tokens")
-    .option('--amount <value>', 'Amount to mint', 100)
+    .option('--amount <value>', 'Amount (wei) to mint', 100)
     .option('--erc20Address <address>', 'ERC20 contract address', constants.ERC20_ADDRESS)
+    .option('--receiver <address>', 'Receiver address', constants.adminAddresses)
     .requiredOption('--multiSig <value>', 'Address of Multi-sig which acts as erc20 admin')
     .option('--approve', 'Approve transaction hash')
     .option('--execute', 'Execute transaction')
@@ -127,9 +131,9 @@ const safeMintCmd = new Command("safe-mint")
     .action(async function (args) {
         await safeSetupParentArgs(args, args.parent.parent)
 
-        logSafe(args, `Minting ${args.amount} tokens to ${args.wallet.address} on contract ${args.erc20Address}`)
+        logSafe(args, `Minting ${args.amount} (wei) tokens to ${args.receiver} on contract ${args.erc20Address}`)
 
-        await safeERC20TransactionAppoveExecute(args, 'mint', [args.wallet.address, expandDecimals(args.amount, args.decimals)])
+        await safeERC20TransactionAppoveExecute(args, 'mint', [args.receiver, args.amount])
     })
 
 const minterInfoCmd = new Command("minter-info")
