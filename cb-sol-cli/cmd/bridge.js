@@ -204,12 +204,13 @@ const displayParametersCmd = new Command("display-parameters")
         const chainId = await bridgeInstance._chainID();
         const relayerThreshold = await bridgeInstance._relayerThreshold();
         const totalRelayers = await bridgeInstance._totalRelayers();
+        const totalOperators = await bridgeInstance._totalOperators();
         const totalProposals = await bridgeInstance._totalProposals();
         const fee = await bridgeInstance._fee();
         const expiry = await bridgeInstance._expiry();
         const wtokenAddress = await bridgeInstance._wtokenAddress();
 
-        log(args, `chainId: ${chainId}, relayerThreshold: ${relayerThreshold}, totalRelayers: ${totalRelayers}, totalProposals: ${totalProposals}, fee: ${fee}, expiry: ${expiry}, wtokenAddress: ${wtokenAddress}`)
+        log(args, `chainId: ${chainId}, relayerThreshold: ${relayerThreshold}, totalRelayers: ${totalRelayers}, totalOperators: ${totalOperators}, totalProposals: ${totalProposals}, fee: ${fee}, expiry: ${expiry}, wtokenAddress: ${wtokenAddress}`)
     })
 
 const bridgeCmd = new Command("bridge")
