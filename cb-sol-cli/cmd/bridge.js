@@ -214,6 +214,26 @@ const queryFeeCmd = new Command("query-fee")
         console.log("fee: " + fee.toString() + " (wei), for destination chainID: " + args.destinationChainID.toString());
     })
 
+const displayParametersCmd = new Command("display-parameters")
+    .description("display parameters of bridge")
+    .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
+    .action(async function (args) {
+        await setupParentArgs(args, args.parent.parent)
+        const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
+
+        log(args, `display parameters of bridge`);
+        const chainId = await bridgeInstance._chainID();
+        const relayerThreshold = await bridgeInstance._relayerThreshold();
+        const totalRelayers = await bridgeInstance._totalRelayers();
+        const totalOperators = await bridgeInstance._totalOperators();
+        const totalProposals = await bridgeInstance._totalProposals();
+        const fee = await bridgeInstance._fee();
+        const expiry = await bridgeInstance._expiry();
+        const wtokenAddress = await bridgeInstance._wtokenAddress();
+
+        log(args, `chainId: ${chainId}, relayerThreshold: ${relayerThreshold}, totalRelayers: ${totalRelayers}, totalOperators: ${totalOperators}, totalProposals: ${totalProposals}, fee: ${fee}, expiry: ${expiry}, wtokenAddress: ${wtokenAddress}`)
+    })
+
 const bridgeCmd = new Command("bridge")
 
 bridgeCmd.addCommand(registerResourceCmd)
@@ -228,6 +248,7 @@ bridgeCmd.addCommand(queryProposalCmd)
 bridgeCmd.addCommand(queryProposal2Cmd)
 bridgeCmd.addCommand(queryResourceId)
 bridgeCmd.addCommand(queryFeeCmd)
+bridgeCmd.addCommand(displayParametersCmd)
 
 
 

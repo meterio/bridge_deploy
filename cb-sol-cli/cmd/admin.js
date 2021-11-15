@@ -4,6 +4,65 @@ const constants = require('../constants');
 const {Command} = require('commander');
 const {setupParentArgs, safeSetupParentArgs, safeTransactionAppoveExecute, splitCommaList, waitForTx, log, logSafe} = require("./utils")
 
+const adminRoleInfoCmd = new Command("admin-role-info")
+    .description("Check admin role info")
+    .requiredOption('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
+    .action(async function (args) {
+    await setupParentArgs(args, args.parent.parent)
+    const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
+
+    let count = await bridgeInstance.getRoleMemberCount(constants.ADMIN_ROLE)
+    console.log()
+    console.log(`[bridge ${args.bridge}] has ${count} admin(s).`)
+    if (count > 0) {
+        var addr;
+        for (let i=0; i<count; i++) {
+            addr = await bridgeInstance.getRoleMember(constants.ADMIN_ROLE, i)
+            console.log(` # ${i}: ${addr}`)
+        }
+    }
+    })
+
+const relayerRoleInfoCmd = new Command("relayer-role-info")
+  .description("Check relayer role info")
+  .requiredOption('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
+  .action(async function (args) {
+    await setupParentArgs(args, args.parent.parent)
+    const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
+  
+    let RELAYER_ROLE = await bridgeInstance.RELAYER_ROLE();
+    let count = await bridgeInstance.getRoleMemberCount(RELAYER_ROLE)
+    console.log()
+    console.log(`[bridge ${args.bridge}] has ${count} relayer(s).`)
+    if (count > 0) {
+      var addr;
+      for (let i=0; i<count; i++) {
+        addr = await bridgeInstance.getRoleMember(RELAYER_ROLE, i)
+        console.log(` # ${i}: ${addr}`)
+      }
+    }
+  })
+
+const operatorRoleInfoCmd = new Command("operator-role-info")
+  .description("Check operator role info")
+  .requiredOption('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
+  .action(async function (args) {
+    await setupParentArgs(args, args.parent.parent)
+    const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
+  
+    let OPERATOR_ROLE = await bridgeInstance.OPERATOR_ROLE();
+    let count = await bridgeInstance.getRoleMemberCount(OPERATOR_ROLE)
+    console.log()
+    console.log(`[bridge ${args.bridge}] has ${count} operator(s).`)
+    if (count > 0) {
+      var addr;
+      for (let i=0; i<count; i++) {
+        addr = await bridgeInstance.getRoleMember(OPERATOR_ROLE, i)
+        console.log(` # ${i}: ${addr}`)
+      }
+    }
+  })
+
 const isRelayerCmd = new Command("is-relayer")
     .description("Check if address is relayer")
     .option('--relayer <value>', 'Address to check', constants.relayerAddresses[0])
@@ -443,6 +502,9 @@ const safeTransferFunds = new Command("safe-transfer-funds")
 
 const adminCmd = new Command("admin")
 
+adminCmd.addCommand(adminRoleInfoCmd)
+adminCmd.addCommand(relayerRoleInfoCmd)
+adminCmd.addCommand(operatorRoleInfoCmd)
 adminCmd.addCommand(isRelayerCmd)
 adminCmd.addCommand(isAdminCmd)
 adminCmd.addCommand(addAdminCmd)

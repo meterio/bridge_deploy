@@ -76,11 +76,12 @@ const expandDecimals = (amount, decimals = 18) => {
 
 const log = (args, msg) => console.log(`[${args.parent._name}/${args._name}] ${msg}`)
 
-const safeTransactionAppoveExecute = async (args, functionName, params =[]) => {
+const safeTransactionAppoveExecute = async (args, functionName, params = []) => {
     const { bridge, safeToolchain, multiSig, approve, provider, execute, approvers } = args
-    const encodedFuntionData = SafeToolchain.util.encodeFunctionData(constants.ContractABIs.Bridge.abi, bridge, safeToolchain.wallet, functionName, params)
 
-    const { transactionHash, txData} = await safeToolchain.commands.transactionData(multiSig, {
+    const encodedFuntionData = SafeToolchain.util.encodeFunctionData(constants.ContractABIs.Bridge.abi, bridge, safeToolchain.wallet, functionName, params)
+    
+    const { transactionHash, txData } = await safeToolchain.commands.transactionData(multiSig, {
         to: bridge,
         value: '0',
         data: encodedFuntionData,
@@ -107,6 +108,36 @@ const safeTransactionAppoveExecute = async (args, functionName, params =[]) => {
     }
 }
 
+const safeERC20TransactionAppoveExecute = async (args, functionName, params = []) => {
+    const { erc20Address, safeToolchain, multiSig, approve, provider, execute, approvers } = args
+    const encodedFuntionData = SafeToolchain.util.encodeFunctionData(constants.ContractABIs.Erc20Mintable.abi, erc20Address, safeToolchain.wallet, functionName, params)
+
+    const { transactionHash, txData } = await safeToolchain.commands.transactionData(multiSig, {
+        to: erc20Address,
+        value: '0',
+        data: encodedFuntionData,
+        operation: SafeToolchain.util.constants.CALL  // CALL
+    })
+
+    console.log('transactionHash', transactionHash)
+    console.log('txData', txData)
+
+    // approve transaction
+    if (approve) {
+        const tx = await safeToolchain.commands.approveHash(multiSig, transactionHash)
+        await waitForTx(provider, tx.hash)
+    } else if (execute) {
+        assert(approvers && approvers.length, 'Missing approvers')
+        const tx = await safeToolchain.commands.executeTransaction(
+            multiSig,
+            {
+                ...txData,
+                approvers: approvers
+            }
+        )
+        await waitForTx(provider, tx.hash)
+    }
+}
 const { GETTING_MULTISIG_TRANSACTION, APPROVING_MULTISIG_TRANSACTION, EXECUTING_MULTISIG_TRANSACTION } = constants
 const logSafe = (args, msg) => {
     const { approve, execute } = args
@@ -128,5 +159,6 @@ module.exports = {
     log,
     logSafe,
     expandDecimals,
-    safeTransactionAppoveExecute
+    safeTransactionAppoveExecute,
+    safeERC20TransactionAppoveExecute
 }
