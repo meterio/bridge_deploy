@@ -168,6 +168,27 @@ const queryProposalCmd = new Command("query-proposal")
         console.log(prop)
     })
 
+const queryProposal2Cmd = new Command("query-proposal2")
+    .description("Queries a proposal")
+    .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
+    .option('--handler <address>', 'Handler contract address', constants.ERC20_HANDLER_ADDRESS)
+    .option('--chainId <id>', 'Source chain ID of proposal', 0)
+    .option('--depositNonce <value>', 'Deposit nonce of proposal', 0)
+    .option('--data <value>', 'proposal metadata', constants.ERC20_PROPOSAL_HASH)
+    .action(async function (args) {
+        await setupParentArgs(args, args.parent.parent)
+        const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
+
+        // the input is full data, so we need truncate the useful part        
+        data = '0x' + args.data.substr(267, 167);
+        console.log(data);
+        const dataHash = ethers.utils.solidityKeccak256(["address", "bytes"], [args.handler, data])
+        console.log(args.chainId, args.depositNonce, dataHash);
+        const prop = await bridgeInstance.getProposal(args.chainId, args.depositNonce, dataHash)
+
+        console.log(prop)
+    })
+
 const queryResourceId = new Command("query-resource")
     .description("Query the contract address associated with a resource ID")
     .option('--handler <address>', 'Handler contract address', constants.ERC20_HANDLER_ADDRESS)
@@ -204,6 +225,7 @@ bridgeCmd.addCommand(safeSetBurnCmd)
 bridgeCmd.addCommand(cancelProposalCmd)
 bridgeCmd.addCommand(safeCancelProposalCmd)
 bridgeCmd.addCommand(queryProposalCmd)
+bridgeCmd.addCommand(queryProposal2Cmd)
 bridgeCmd.addCommand(queryResourceId)
 bridgeCmd.addCommand(queryFeeCmd)
 
