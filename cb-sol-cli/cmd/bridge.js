@@ -172,6 +172,7 @@ const queryProposal2Cmd = new Command("query-proposal2")
     .description("Queries a proposal")
     .option('--bridge <address>', 'Bridge contract address', constants.BRIDGE_ADDRESS)
     .option('--handler <address>', 'Handler contract address', constants.ERC20_HANDLER_ADDRESS)
+    .option('--isErc20Proposal <value>', 'Is the proposal the erc20?', 1)
     .option('--chainId <id>', 'Source chain ID of proposal', 0)
     .option('--depositNonce <value>', 'Deposit nonce of proposal', 0)
     .option('--data <value>', 'proposal metadata', constants.ERC20_PROPOSAL_HASH)
@@ -180,7 +181,12 @@ const queryProposal2Cmd = new Command("query-proposal2")
         const bridgeInstance = new ethers.Contract(args.bridge, constants.ContractABIs.Bridge.abi, args.wallet);
 
         // the input is full data, so we need truncate the useful part        
-        data = '0x' + args.data.substr(267, 167);
+        // erc20 and generic handler data have different size
+        if (args.erc20Proposal == 1) {
+            data = '0x' + args.data.substr(267, 167);
+        } else {
+            data = '0x' + args.data.substr(267);
+        }
         console.log(data);
         const dataHash = ethers.utils.solidityKeccak256(["address", "bytes"], [args.handler, data])
         console.log(args.chainId, args.depositNonce, dataHash);
