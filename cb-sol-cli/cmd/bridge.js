@@ -182,7 +182,7 @@ const queryProposal2Cmd = new Command("query-proposal2")
 
         // the input is full data, so we need truncate the useful part        
         // erc20 and generic handler data have different size
-        if (args.erc20Proposal == 1) {
+        if (args.isErc20Proposal == 1) {
             data = '0x' + args.data.substr(267, 167);
         } else {
             data = '0x' + args.data.substr(267);
