@@ -176,6 +176,7 @@ async function deployBridgeContract(args) {
         args.relayerThreshold,
         ethers.utils.parseEther(args.fee.toString()),
         args.expiry,
+        args.wrapTokenAddress,
         { gasPrice: args.gasPrice, gasLimit: args.gasLimit}
     );
     await contract.deployed()
